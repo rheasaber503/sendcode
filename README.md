@@ -1,16 +1,32 @@
+VAR
+    PeerActive : BOOL;
+    PeerError : BOOL;
+    ReceiveBusy : BOOL;
+    ReceiveError : BOOL;
+    ReceiveErrorID : ERROR;
+END_VAR
+
+
+
+
+
+
 
 
 CycleCount := CycleCount + 1;
 
-
-// 1. Activer le port UDP 5000
+// 1. Ouvrir le port UDP
 UDP_Peer(
-    xEnable := EnableUDP, //TRUE,
+    xEnable := EnableUDP,
     itfIPAddress := myIPAddress,
     uiPort := 5001
 );
 
-// 2. Recevoir les donnees
+// Diagnostic du Peer
+PeerActive := UDP_Peer.xActive;
+PeerError := UDP_Peer.xError;
+
+// 2. Recevoir les données
 UDP_Receive(
     xEnable := UDP_Peer.xActive,
     itfPeer := UDP_Peer.itfPeer,
@@ -18,9 +34,15 @@ UDP_Receive(
     udiSize := SIZEOF(RxBuffer)
 );
 
+// Diagnostic de la réception
+ReceiveBusy := UDP_Receive.xBusy;
+ReceiveError := UDP_Receive.xError;
+ReceiveErrorID := UDP_Receive.eErrorID;
+
+// 3. Compteur de réception
 IF UDP_Receive.xReady THEN
     ReceptionCount := ReceptionCount + 1;
 END_IF;
-// 3. Verifier la reception
+
 DataReceived := UDP_Receive.xReady;
 BytesReceived := UDP_Receive.udiCount;
