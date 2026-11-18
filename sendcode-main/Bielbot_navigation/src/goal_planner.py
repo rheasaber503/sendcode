@@ -80,7 +80,7 @@ class GoalPlanner(Node):
             'Goal Planner prêt : recalcul automatique activé.'
         )
 
-    def goal_callback(self, msg):
+    def goal_callback(self, msg): # always on et met current_goal pour chexkplanning
         if msg.header.frame_id != 'map':
             self.get_logger().error(
                 'La destination doit être dans le frame map.'
@@ -96,7 +96,7 @@ class GoalPlanner(Node):
             'Nouvelle destination reçue.'
         )
 
-    def map_callback(self, msg):
+    def map_callback(self, msg): # always on et donne map_changed =true
         # Une nouvelle carte SLAM a été publiée.
         # Elle peut contenir des changements.
         pass  #self.map_changed = True
@@ -186,7 +186,7 @@ class GoalPlanner(Node):
             )
             return
 
-        self.send_plan_request(pose) #Si Nav2 est prêt, on a une pos et que map est changed: on demande un nouveau chemin A* à Nav2
+        self.send_plan_request(pose) #Si Nav2 est prêt, on a une pos robot, si on a un goal et que map est changed: on demande un nouveau chemin A* à Nav2
 
     def send_plan_request(self, start): #start=pose actuelle  qui devient last_planned_pose
         request = ComputePathToPose.Goal()
