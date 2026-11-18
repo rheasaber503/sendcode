@@ -1,0 +1,62 @@
+Parfait, ta Jetson utilise Ubuntu 22.04.5 LTS (Jammy) avec GNOME.
+
+On peut afficher son bureau sur ton PC Windows sans câble HDMI ni DisplayPort, en utilisant VNC.
+
+Je te conseille TigerVNC, car il peut créer un bureau graphique virtuel même lorsqu'aucun écran n'est branché à la Jetson.
+1. Installer TigerVNC sur la Jetson
+Dans le terminal de ta Jetson (ou via SSH depuis Windows) :
+sudo apt update
+sudo apt install tigervnc-standalone-server tigervnc-common
+
+
+2. Configurer le mot de passe VNC
+vncpasswd
+
+
+Choisis un mot de passe pour accéder au bureau de ta Jetson.
+3. Configurer le bureau GNOME
+Exécute :
+mkdir -p ~/.vnc
+nano ~/.vnc/xstartup
+
+
+Ajoute :
+#!/bin/sh
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+exec dbus-launch --exit-with-session gnome-session
+
+
+Enregistre avec Ctrl + O, Entrée, puis Ctrl + X.
+
+Ensuite :
+chmod +x ~/.vnc/xstartup
+
+
+Si dbus-launch n'est pas disponible :
+sudo apt install dbus-x11
+
+
+4. Démarrer le serveur VNC
+vncserver :1 -geometry 1920x1080 -depth 24 -localhost yes
+
+
+Cela crée un bureau virtuel accessible sur le port 5901.
+5. Se connecter depuis Windows
+Sur Windows, installe TigerVNC Viewer.
+
+Puis, dans PowerShell, crée un tunnel SSH :
+ssh -L 5901:localhost:5901 rhea@192.168.29.100
+
+
+Garde cette fenêtre ouverte.
+
+Dans TigerVNC Viewer, entre :
+localhost:5901
+
+
+Tu devrais voir le bureau Ubuntu de ta Jetson dans une fenêtre Windows.
+
+Attention : TigerVNC crée ici un bureau virtuel distinct, pas une copie de l'écran physique de la Jetson. GNOME peut également nécessiter quelques ajustements selon la configuration Jetson.
+
+Une question : tu veux voir exactement le même écran que celui de la Jetson, ou simplement avoir un bureau Ubuntu utilisable depuis Windows pour lancer VS Code, RViz2 et tes programmes ROS2 ?
