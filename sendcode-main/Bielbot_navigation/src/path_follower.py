@@ -226,7 +226,7 @@ class PathFollower(Node):
 
             else:
                 self.get_logger().error(
-                    f'Suivi terminé avec statut {response.status}.'
+                    f'Suivi terminé avec statut {response.status}.' #MPPI échoue et l'action FollowPath se termine. si l action follow path ne se termine pas, le robot peut redemarrer car MPPI continue a calculer
 		    f'Résultat : {response.result}'
                 )
 
