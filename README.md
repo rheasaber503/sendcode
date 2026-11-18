@@ -1,55 +1,72 @@
-PROGRAM PLC_PRG
-VAR
-    // 1. Network configuration (leave IP as '0.0.0.0' to listen on all local interfaces)
-    ipLocalAddr   : NBS.IPv4Address := (ipAddress := '0.0.0.0');
-    uiListenPort  : UINT := 5001;
+ne pouvons nous pas ajouter un truc de surete si collision attendre 10 sec puis faloow path pas actif?
+Oui. On peut ajouter une temporisation de sécurité de 10 secondes dans ton PathFollower.
 
-    // 2. Net Base Services Function Blocks
-    fbUdpPeer     : NBS.UDP_Peer;
-    fbUdpReceive  : NBS.UDP_Receive;
+Le comportement serait :
 
-    // 3. Receive buffer & decoded values
-    aRxBuffer     : ARRAY[0..7] OF BYTE;
-    uConvVx       : U_BytesToReal;
-    uConvWz       : U_BytesToReal;
+Le Collision Monitor détecte un risque et limite ou arrête le robot.
 
-    rVx           : REAL; // Linear velocity [m/s]
-    rWz           : REAL; // Angular velocity [rad/s]
-    udiRxCount    : UDINT;
-END_VAR
+On démarre un compteur de 10 secondes.
+
+Si le risque disparaît avant 10 secondes, on remet le compteur à zéro et FollowPath reste actif.
+
+Si le risque persiste pendant 10 secondes, on annule l'action FollowPath.
+
+Même si l'obstacle disparaît ensuite, le robot ne repart pas automatiquement.
+
+Attention : avec ton mode approach, le Collision Monitor peut seulement ralentir le robot. Il faut donc décider si les 10 secondes s'appliquent à toute intervention du Collision Monitor ou uniquement lorsque le robot est effectivement arrêté.
+
+Code à ajouter dans PathFollower
+Dans les imports :
+
+from nav2_msgs.msg import CollisionMonitorState
+
+Dans __init__() :
+
+self.collision_since = None
+self.collision_timeout = 10.0
+self.safety_stop = False
+
+self.collision_sub = self.create_subscription(
+    CollisionMonitorState,
+    '/collision_monitor_state',
+    self.collision_callback,
+    10
+)
+
+self.create_timer(0.1, self.check_collision_timeout)
+
+Ajoute ces deux fonctions dans ta classe :
+
+def collision_callback(self, msg):
+    # 0 = aucune action de protection active
+    collision_active = msg.action_type != 0
+
+    if collision_active:
+        if self.collision_since is None:
+            self.collision_since = self.get_clock().now()
+            self.get_logger().warn(
+                "Collision Monitor actif : temporisation démarrée"
+            )
+    else:
+        self.collision_since = None
 
 
+def check_collision_timeout(self):
+    if self.collision_since is None or self.safety_stop:
+        return
 
-// Step 1: Open and bind the local UDP socket on port 5001
-fbUdpPeer(
-    xEnable      := TRUE,
-    itfIPAddress := ipLocalAddr,
-    uiPort       := uiListenPort
-);
+    elapsed = (
+        self.get_clock().now() - self.collision_since
+    ).nanoseconds / 1e9
 
-// Step 2: Continuously listen once the peer is active
-fbUdpReceive(
-    xEnable := fbUdpPeer.xActive,
-    itfPeer := fbUdpPeer.itfPeer,
-    pData   := ADR(aRxBuffer),
-    udiSize := SIZEOF(aRxBuffer)
-);
+    if elapsed >= self.collision_timeout:
+        self.safety_stop = True
 
-// Step 3: When a full 8-byte packet arrives, swap Big-Endian bytes to Little-Endian REAL
-IF fbUdpReceive.xReady AND (fbUdpReceive.udiCount = 8) THEN
-    // Swap bytes 0..3 for vx (Big-Endian -> Little-Endian)
-    uConvVx.aBytes[0] := aRxBuffer[3];
-    uConvVx.aBytes[1] := aRxBuffer[2];
-    uConvVx.aBytes[2] := aRxBuffer[1];
-    uConvVx.aBytes[3] := aRxBuffer[0];
-    rVx := uConvVx.rValue;
+        self.get_logger().error(
 
-    // Swap bytes 4..7 for wz (Big-Endian -> Little-Endian)
-    uConvWz.aBytes[0] := aRxBuffer[7];
-    uConvWz.aBytes[1] := aRxBuffer[6];
-    uConvWz.aBytes[2] := aRxBuffer[5];
-    uConvWz.aBytes[3] := aRxBuffer[4];
-    rWz := uConvWz.rValue;
+Enfin, dans process_pending_path(), ajoute au début :
 
-    udiRxCount := udiRxCount + 1;
-END_IF
+if self.safety_stop:
+    return
+
+Cela empêche ton PathFollower de lancer un nouveau chemin après l'arrêt de sécurité. Il faudra ensuite prévoir un réarmement manuel explicite de self.safety_stop.
