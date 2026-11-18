@@ -7,7 +7,7 @@ from rclpy.node import Node
 from rclpy.action import ActionClient
 
 from nav_msgs.msg import Path
-from nav2_msgs.action import FollowPath
+from nav2_msgs.action import FollowPath #action
 from action_msgs.msg import GoalStatus
 
 
@@ -47,7 +47,7 @@ class PathFollower(Node):
 
         if path.header.frame_id != 'map': #impose que le chemin soit exprimé dans le repère map.
             self.get_logger().error(
-                'Chemin refusé : frame différent de map.'
+                'Chemin refusé : frame différent de /map.'
             )
             return
 
