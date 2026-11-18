@@ -96,7 +96,7 @@ class GoalPlanner(Node):
             'Nouvelle destination reçue.'
         )
 
-    def map_callback(self, msg): # always on et donne map_changed =true
+    def map_callback(self, msg): # always on et renvois map_changed =true quand carte change // mais avec pass si la carte SLAM change, map_changed ne devient pas True.
         # Une nouvelle carte SLAM a été publiée.
         # Elle peut contenir des changements.
         pass  #self.map_changed = True
@@ -192,7 +192,7 @@ class GoalPlanner(Node):
         request = ComputePathToPose.Goal()
         request.start = start
         request.goal = self.current_goal
-        request.planner_id = 'GridBased'
+        request.planner_id = 'GridBased' # Donc même si nœud Python ne surveille pas les obstacles, lorsqu'il demande un chemin, A utilise la Global Costmap disponible à ce moment-là (interne)
         request.use_start = True
 
         self.planning = True
@@ -206,7 +206,7 @@ class GoalPlanner(Node):
             'Recalcul du chemin A*...'
         )
 
-        future = self.client.send_goal_async(request) # envoie la demande anev tous les requests set
+        future = self.client.send_goal_async(request) # envoie la demande avec tous les requests set . Le Planner Server Nav2 reçoit cette requête et utilise sa Global Costmap interne.: Donc même si ton nœud Python ne surveille pas les obstacles (car il prend que map), lorsqu'il demande un chemin, A utilise la Global Costmap disponible à ce moment-là
         future.add_done_callback(
             lambda f: self.goal_response_callback(f, version)
         )
