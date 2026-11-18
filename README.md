@@ -63,6 +63,11 @@ def check_collision_timeout(self):
         self.safety_stop = True
 
         self.get_logger().error(
+            "RISQUE DE COLLISION DEPUIS 10 S : annulation de FollowPath"
+        )
+
+        if self.active_handle is not None:
+            self.active_handle.cancel_goal_async()
 
 Enfin, dans process_pending_path(), ajoute au début :
 
