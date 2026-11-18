@@ -186,7 +186,7 @@ class GoalPlanner(Node):
             )
             return
 
-        self.send_plan_request(pose) #Si Nav2 est prêt, on demande un nouveau chemin A* à Nav2
+        self.send_plan_request(pose) #Si Nav2 est prêt, on a une pos et que map est changed: on demande un nouveau chemin A* à Nav2
 
     def send_plan_request(self, start): #start=pose actuelle  qui devient last_planned_pose
         request = ComputePathToPose.Goal()
