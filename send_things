@@ -60,3 +60,12 @@ Tu devrais voir le bureau Ubuntu de ta Jetson dans une fenêtre Windows.
 Attention : TigerVNC crée ici un bureau virtuel distinct, pas une copie de l'écran physique de la Jetson. GNOME peut également nécessiter quelques ajustements selon la configuration Jetson.
 
 Une question : tu veux voir exactement le même écran que celui de la Jetson, ou simplement avoir un bureau Ubuntu utilisable depuis Windows pour lancer VS Code, RViz2 et tes programmes ROS2 ?
+
+
+rhea@rhea-desktop:~$ ls -la ~/.vnc/
+total 16
+drwxrwxr-x  2 rhea rhea 4096 Nov 19 09:19 .
+drwxr-x--- 25 rhea rhea 4096 Nov 19 09:17 ..
+-rw-------  1 rhea rhea   16 Nov 19 09:18 passwd
+-rwxrwxr-x  1 rhea rhea  114 Nov 19 09:19 xstartup
+rhea@rhea-desktop:~$ 
