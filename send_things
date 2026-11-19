@@ -37,6 +37,13 @@ Si dbus-launch n'est pas disponible :
 sudo apt install dbus-x11
 
 
+rhea@rhea-desktop:~$ ps aux | grep -E 'Xtigervnc|Xvnc|Xorg'
+root        2572  2.5  0.7 25361400 55912 tty2   Sl+  09:08   0:46 /usr/lib/xorg/Xorg vt2 -displayfd 3 -auth /run/user/1000/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
+rhea        9651  0.0  0.0   8976  2208 pts/0    S+   09:38   0:00 grep --color=auto -E Xtigervnc|Xvnc|Xorg
+rhea@rhea-desktop:~$ ss -ltn | grep 5901
+rhea@rhea-desktop:~$ 
+
+
 4. Démarrer le serveur VNC
 vncserver :1 -geometry 1920x1080 -depth 24 -localhost yes
 
