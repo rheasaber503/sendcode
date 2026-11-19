@@ -1,9 +1,11 @@
-Parfait, ta Jetson utilise Ubuntu 22.04.5 LTS (Jammy) avec GNOME.
+Jetson utilise Ubuntu 22.04.5 LTS (Jammy) avec GNOME.
 
 On peut afficher son bureau sur ton PC Windows sans câble HDMI ni DisplayPort, en utilisant VNC.
 
-Je te conseille TigerVNC, car il peut créer un bureau graphique virtuel même lorsqu'aucun écran n'est branché à la Jetson.
+Conseil TigerVNC, car il peut créer un bureau graphique virtuel même lorsqu'aucun écran n'est branché à la Jetson.
+
 1. Installer TigerVNC sur la Jetson
+
 Dans le terminal de ta Jetson (ou via SSH depuis Windows) :
 sudo apt update
 sudo apt install tigervnc-standalone-server tigervnc-common
@@ -40,8 +42,8 @@ sudo apt install dbus-x11
 
 
 
-4. Démarrer le serveur VNC
-vncserver :1 -geometry 1920x1080 -depth 24 -localhost yes
+4. Démarrer le serveur VNC     ET FAIRE CA LA DEUXIEME FOIS
+vncserver :2 -geometry 1920x1080 -depth 24 -localhost yes
 
 
 Cela crée un bureau virtuel accessible sur le port 5901.
@@ -49,13 +51,13 @@ Cela crée un bureau virtuel accessible sur le port 5901.
 Sur Windows, installe TigerVNC Viewer.
 
 Puis, dans PowerShell, crée un tunnel SSH :
-ssh -L 5901:localhost:5901 rhea@192.168.29.100
+ssh -N -L 5902:127.0.0.1:5902 rhea@192.168.29.100
 
 
 Garde cette fenêtre ouverte.
 
 Dans TigerVNC Viewer, entre :
-localhost:5901
+localhost:5902
 
 
 Tu devrais voir le bureau Ubuntu de ta Jetson dans une fenêtre Windows.
@@ -64,19 +66,3 @@ Attention : TigerVNC crée ici un bureau virtuel distinct, pas une copie de l'é
 
 Une question : tu veux voir exactement le même écran que celui de la Jetson, ou simplement avoir un bureau Ubuntu utilisable depuis Windows pour lancer VS Code, RViz2 et tes programmes ROS2 ?
 
-
-rhea@rhea-desktop:~$ ls -la ~/.vnc/
-total 16
-drwxrwxr-x  2 rhea rhea 4096 Nov 19 09:19 .
-drwxr-x--- 25 rhea rhea 4096 Nov 19 09:17 ..
--rw-------  1 rhea rhea   16 Nov 19 09:18 passwd
--rwxrwxr-x  1 rhea rhea  114 Nov 19 09:19 xstartup
-rhea@rhea-desktop:~$ 
-
-
-
-rhea@rhea-desktop:~$ ps aux | grep -E 'Xtigervnc|Xvnc|Xorg'
-root        2572  2.5  0.7 25361400 55912 tty2   Sl+  09:08   0:46 /usr/lib/xorg/Xorg vt2 -displayfd 3 -auth /run/user/1000/gdm/Xauthority -nolisten tcp -background none -noreset -keeptty -novtswitch -verbose 3
-rhea        9651  0.0  0.0   8976  2208 pts/0    S+   09:38   0:00 grep --color=auto -E Xtigervnc|Xvnc|Xorg
-rhea@rhea-desktop:~$ ss -ltn | grep 5901
-rhea@rhea-desktop:~$ 
